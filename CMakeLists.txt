@@ -34,11 +34,13 @@ if (UNIX)
   else()
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -msse2 -fPIC")
     list(APPEND CUDA_NVCC_FLAGS "-lineinfo;--compiler-options;-O2;-DVERBOSE") 
+    # pascal does this:
+    #set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O2 -msse2 ")
+    #list(APPEND CUDA_NVCC_FLAGS "-lineinfo;-ccbin;/usr/bin/gcc-6;--compiler-options;-O2;-D_FORCE_INLINES;-DVERBOSE_NOT") 
   endif()
 endif()
 
 set(cuda_sources
-  # dynamic.cu
   cudaImage.cu  
   cudaImage.h  
   cudaSiftH.cu 
@@ -56,17 +58,19 @@ endforeach(f)
 
 set(sources
   geomFuncs.cpp  
-  mainSift.cpp
+  mainSift.cpp  
 )
 
 include_directories(
   ${CMAKE_CURRENT_SOURCE_DIR} 
 )
 
-SET(CUDA_SEPARABLE_COMPILATION ON)
+#SET(CUDA_SEPARABLE_COMPILATION ON)
 
 if (CUDASIFT_WITH_OPENCV)
-  cuda_add_executable(cudasift ${cuda_sources} ${sources})
+  # pycudasift does this:
+  # cuda_add_executable(cudasift ${cuda_sources} ${sources})
+  cuda_add_executable(cudasift ${cuda_sources} ${sources} OPTIONS -arch=sm35)
   set_target_properties(cudasift PROPERTIES
     COMPILE_FLAGS "${EXTRA_CXX_FLAGS}"			   
   )
@@ -74,6 +78,9 @@ if (CUDASIFT_WITH_OPENCV)
   target_link_libraries(cudasift
     /usr/local/cuda/lib64/libcudadevrt.a ${OpenCV_LIBS} 
   )
+
+# pascal does this:
+# target_link_libraries(cudasift ${CUDA_cudadevrt_LIBRARY} ${OpenCV_LIBS})
  
 endif()
 
